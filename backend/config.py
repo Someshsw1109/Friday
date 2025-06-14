@@ -1,0 +1,1 @@
+ASSISTANT_NAME = "F.R.I.D.A.Y"
