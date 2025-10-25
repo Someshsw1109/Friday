@@ -1,6 +1,9 @@
 $(document).ready(function () {
-
-  eel.init()()
+  // Remove the eel.init()() - it's not needed here as Eel is already initialized by Python
+  setTimeout(function() {
+    eel.init()();  // This triggers the authentication and speech
+  }, 1000);
+  
   $(".text").textillate({
     loop: true,
     speed: 1500,
@@ -40,36 +43,49 @@ $(document).ready(function () {
     rippleColor: "#ffffff",
   });
 
-  $("#MicBtn").click(function () {
-    eel.play_assistant_sound();
-    $("#Oval").attr("hidden", true);
-    $("#SiriWave").attr("hidden", false);
-
-    eel.takeAllCommands()();
-  });
-
-  function doc_keyUp(e) {
-    // this would test for whichever key is 40 (down arrow) and the ctrl key at the same time
-
-    if (e.key === "j" && e.metaKey) {
-      eel.play_assistant_sound();
+  $("#MicBtn").click(async function () {
+    try {
+      // Use await for Eel calls for better error handling
+      await eel.play_assistant_sound()();
       $("#Oval").attr("hidden", true);
       $("#SiriWave").attr("hidden", false);
-      eel.takeAllCommands()();
+      await eel.takeAllCommands()();
+    } catch (error) {
+      console.error("Error in MicBtn click:", error);
+    }
+  });
+
+  async function doc_keyUp(e) {
+    if (e.key === "j" && e.metaKey) {
+      try {
+        await eel.play_assistant_sound()();
+        $("#Oval").attr("hidden", true);
+        $("#SiriWave").attr("hidden", false);
+        await eel.takeAllCommands()();
+      } catch (error) {
+        console.error("Error in keyup:", error);
+      }
     }
   }
   document.addEventListener("keyup", doc_keyUp, false);
 
-  function PlayAssistant(message) {
+  async function PlayAssistant(message) {
     if (message != "") {
-      $("#Oval").attr("hidden", true);
-      $("#SiriWave").attr("hidden", false);
-      eel.takeAllCommands(message);
-      $("#chatbox").val("");
-      $("#MicBtn").attr("hidden", false);
-      $("#SendBtn").attr("hidden", true);
+      try {
+        $("#Oval").attr("hidden", true);
+        $("#SiriWave").attr("hidden", false);
+        await eel.takeAllCommands(message)();  // Added ()() for proper Eel calling
+        $("#chatbox").val("");
+        $("#MicBtn").attr("hidden", false);
+        $("#SendBtn").attr("hidden", true);
+      } catch (error) {
+        console.error("Error in PlayAssistant:", error);
+        // Reset UI on error
+        $("#Oval").attr("hidden", false);
+        $("#SiriWave").attr("hidden", true);
+      }
     } else {
-      console.log("Empty message, nothing sent."); // Log if the message is empty
+      console.log("Empty message, nothing sent.");
     }
   }
 
@@ -85,7 +101,7 @@ $(document).ready(function () {
 
   $("#chatbox").keyup(function () {
     let message = $("#chatbox").val();
-    console.log("Current chatbox input: ", message); // Log input value for debugging
+    console.log("Current chatbox input: ", message);
     ShowHideButton(message);
   });
 
