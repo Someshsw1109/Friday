@@ -1,0 +1,16 @@
+eel
+pyttsx3
+SpeechRecognition
+pvporcupine
+pyaudio
+pyautogui
+pywhatkit
+pygame
+opencv-python
+face_recognition
+pycaw
+comtypes
+psutil
+winshell
+EdgeGPT
+python-dotenv
