@@ -93,9 +93,6 @@
 
 ### Interface Preview
 
-<img width="1260" height="1039" alt="Screenshot 2025-10-25 204206" src="https://github.com/user-attachments/assets/3d1fe20f-9fcc-41f7-af7a-ccf228691350" />
-
-
 ┌─────────────────────────────────────────┐
 │ FRIDAY AI Assistant │
 │ │
@@ -109,11 +106,7 @@
 
 
 ### Screenshots
-<img width="863" height="289" alt="Screenshot 2025-10-25 204127" src="https://github.com/user-attachments/assets/de47c7b1-07ff-4c68-95bb-b1dac2e80af7" />
-<img width="1240" height="984" alt="Screenshot 2025-10-25 204134" src="https://github.com/user-attachments/assets/601551d1-9c78-4e05-9b24-aacf0a973854" />
-<img width="1269" height="994" alt="Screenshot 2025-10-25 204200" src="https://github.com/user-attachments/assets/c5105b29-1fdf-405d-b5ee-2deca2fb1913" />
-<img width="1260" height="1039" alt="Screenshot 2025-10-25 204206" src="https://github.com/user-attachments/assets/c4401ecb-1df0-44f2-9c1d-438d55ac2a9f" />
-
+*[Add your screenshots here]*
 
 ---
 
