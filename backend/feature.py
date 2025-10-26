@@ -5,11 +5,14 @@ from shlex import quote
 import struct
 import subprocess
 import time
+import datetime
 import webbrowser
 import eel
 from pathlib import Path
 import asyncio
+import socket
 
+# Core imports
 try:
     from EdgeGPT.EdgeGPT import Chatbot, ConversationStyle
     EDGEGPT_AVAILABLE = True
@@ -49,8 +52,51 @@ except ImportError as e:
     pygame = None
     print(f"Warning: Missing dependency - {str(e)}")
 
+# Advanced feature imports
+try:
+    import wikipedia
+except ImportError as e:
+    wikipedia = None
+    print(f"Warning: wikipedia not installed - {str(e)}")
+
+try:
+    import pyjokes
+except ImportError as e:
+    pyjokes = None
+    print(f"Warning: pyjokes not installed - {str(e)}")
+
+try:
+    import psutil
+except ImportError as e:
+    psutil = None
+    print(f"Warning: psutil not installed - {str(e)}")
+
+try:
+    import requests
+except ImportError as e:
+    requests = None
+    print(f"Warning: requests not installed - {str(e)}")
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError as e:
+    BeautifulSoup = None
+    print(f"Warning: BeautifulSoup not installed - {str(e)}")
+
+try:
+    import PyPDF2
+except ImportError as e:
+    PyPDF2 = None
+    print(f"Warning: PyPDF2 not installed - {str(e)}")
+
+try:
+    import instaloader
+except ImportError as e:
+    instaloader = None
+    print(f"Warning: instaloader not installed - {str(e)}")
+
 from backend.command import speak
-from backend.config import ASSISTANT_NAME, PORCUPINE_ACCESS_KEY
+from backend.config import ASSISTANT_NAME, EMAIL_ADDRESS, EMAIL_PASSWORD, NEWS_API_KEY, OPENWEATHER_API_KEY, PORCUPINE_ACCESS_KEY, WOLFRAMALPHA_APP_ID
 import sqlite3
 
 from backend.helper import extract_yt_term, remove_words
@@ -70,6 +116,10 @@ try:
         pygame.mixer.init()
 except Exception as e:
     print(f"Warning: pygame mixer initialization failed: {e}")
+
+# =================================
+# EXISTING FUNCTIONS
+# =================================
 
 @eel.expose
 def play_assistant_sound():
@@ -97,7 +147,7 @@ def openCommand(query):
     try:
         # Remove common wake words and command words
         query = query.lower()
-        query = query.replace("alexa", "").replace("friday", "").replace("jarvis", "")
+        query = query.replace("jarvis", "").replace("friday", "")
         query = query.replace(ASSISTANT_NAME.lower(), "")
         query = query.replace("open", "").replace("start", "").replace("launch", "")
         query = query.strip()
@@ -131,9 +181,6 @@ def openCommand(query):
             "explorer": "explorer.exe",
             "settings": "ms-settings:",
             "camera": "microsoft.windows.camera:",
-            "calculator": "calc.exe",
-            "calendar": "outlookcal:",
-            "mail": "outlookmail:",
         }
         
         # Common websites
@@ -171,7 +218,6 @@ def openCommand(query):
         # Try database (if available)
         elif cursor is not None:
             try:
-                # Check system commands
                 cursor.execute('SELECT path FROM sys_command WHERE LOWER(name) = ?', (query,))
                 results = cursor.fetchall()
                 
@@ -180,7 +226,6 @@ def openCommand(query):
                     os.startfile(results[0][0])
                     return
                 
-                # Check web commands
                 cursor.execute('SELECT url FROM web_command WHERE LOWER(name) = ?', (query,))
                 results = cursor.fetchall()
                 
@@ -221,7 +266,7 @@ def PlayYoutube(query):
         speak("Error playing YouTube video")
 
 def hotword():
-    """Listen for hotword (Alexa) and trigger action"""
+    """Listen for hotword (Friday) and trigger action"""
     porcupine = None
     paud = None
     audio_stream = None
@@ -240,7 +285,8 @@ def hotword():
         try:
             porcupine = pvporcupine.create(
                 access_key=PORCUPINE_ACCESS_KEY,
-                keywords=["alexa"]
+                keywords=["jarvis"]  # ✅ Changed from "alexa" to "jarvis"
+                # Note: Porcupine doesn't have "friday" built-in, "jarvis" is closest
             )
             print("Porcupine initialized successfully")
         except Exception as e:
@@ -263,7 +309,7 @@ def hotword():
                 porcupine.delete()
             return
         
-        print("Listening for hotword 'Alexa'...")
+        print("Listening for hotword 'Friday'...")
         
         try:
             while True:
@@ -274,9 +320,8 @@ def hotword():
                     keyword_index = porcupine.process(pcm)
                     
                     if keyword_index >= 0:
-                        print("Hotword 'Alexa' detected!")
+                        print("Hotword 'Friday' detected!")  # ✅ Updated message
                         
-                        # Trigger the hotkey to activate Friday
                         try:
                             if pyautogui:
                                 pyautogui.keyDown("win")
@@ -316,7 +361,7 @@ def findContact(query):
             speak('Database connection error')
             return 0, 0
         
-        words_to_remove = [ASSISTANT_NAME, 'alexa', 'friday', 'make', 'a', 'to', 'phone', 'call', 'send', 'message', 'whatsapp', 'video']
+        words_to_remove = [ASSISTANT_NAME, 'jarvis', 'friday', 'make', 'a', 'to', 'phone', 'call', 'send', 'message', 'whatsapp', 'video']
         query = remove_words(query, words_to_remove)
         query = query.strip().lower()
         
@@ -406,7 +451,6 @@ async def chatBot_async(query):
             print(f"Error: Cookie file not found at {cookie_path}")
             return "Bing Chat is not configured. Please add cookie.json file with valid Bing cookies."
         
-        # Load cookies from file
         cookies = None
         try:
             with open(cookie_path, 'r', encoding='utf-8') as f:
@@ -416,7 +460,6 @@ async def chatBot_async(query):
                 print("Cookie file is empty")
                 return "Cookie file is empty. Please add valid Bing cookies."
                 
-            # Check for critical _U cookie
             has_u_cookie = any(c.get('name') == '_U' for c in cookies if isinstance(c, dict))
             if not has_u_cookie:
                 print("Missing critical _U cookie")
@@ -432,38 +475,27 @@ async def chatBot_async(query):
         bot = None
         try:
             print(f"Creating Bing chatbot with {len(cookies)} cookies...")
-            
-            # Create chatbot with cookies (pass cookies list directly)
             bot = await Chatbot.create(cookies=cookies)
-            
             print(f"Asking Bing: {user_input}")
             
-            # Ask question with balanced conversation style
             response = await bot.ask(
                 prompt=user_input,
                 conversation_style=ConversationStyle.balanced
             )
             
-            # Extract text from response
             response_text = None
             
             if response:
                 print(f"Response type: {type(response)}")
                 
-                # Try different response formats
                 if isinstance(response, dict):
-                    # Method 1: Direct text field
                     if 'text' in response:
                         response_text = response['text']
-                    
-                    # Method 2: Messages array
                     elif 'messages' in response:
                         for msg in reversed(response['messages']):
                             if msg.get('author') == 'bot':
                                 response_text = msg.get('text', '')
                                 break
-                    
-                    # Method 3: Item.messages structure
                     elif 'item' in response:
                         messages = response.get('item', {}).get('messages', [])
                         for msg in reversed(messages):
@@ -471,7 +503,6 @@ async def chatBot_async(query):
                                 response_text = msg.get('text', '')
                                 break
                     
-                    # Method 4: Look for any text field recursively
                     if not response_text:
                         def find_text(obj):
                             if isinstance(obj, dict):
@@ -494,7 +525,6 @@ async def chatBot_async(query):
                     response_text = response
                 
                 if response_text:
-                    # Clean up the response
                     response_text = response_text.strip()
                     print(f"Bing response: {response_text[:100]}...")
                     return response_text
@@ -509,7 +539,6 @@ async def chatBot_async(query):
             error_msg = str(e)
             print(f"Bing Chat error: {error_msg}")
             
-            # Check for common errors
             if "401" in error_msg or "Unauthorized" in error_msg:
                 return "Your Bing cookies have expired. Please update cookie.json with fresh cookies from bing.com"
             elif "throttled" in error_msg.lower() or "429" in error_msg:
@@ -520,7 +549,6 @@ async def chatBot_async(query):
                 return f"Error communicating with Bing: {error_msg}"
             
         finally:
-            # Always close the bot
             if bot:
                 try:
                     await bot.close()
@@ -537,7 +565,6 @@ async def chatBot_async(query):
 def chatBot(query):
     """Chat with Bing AI (synchronous wrapper)"""
     try:
-        # Get or create event loop
         loop = None
         try:
             loop = asyncio.get_event_loop()
@@ -547,7 +574,6 @@ def chatBot(query):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
         
-        # Run async function
         print(f"Running chatbot for query: {query}")
         response = loop.run_until_complete(chatBot_async(query))
         
@@ -564,3 +590,544 @@ def chatBot(query):
         traceback.print_exc()
         speak("Something went wrong with the chatbot")
         return None
+
+# =================================
+# NEW ADVANCED FEATURES
+# =================================
+
+# 1. GREET USER
+def greet_user():
+    """Greet user based on time"""
+    try:
+        hour = datetime.datetime.now().hour
+        
+        if 0 <= hour < 12:
+            greeting = "Good Morning"
+        elif 12 <= hour < 18:
+            greeting = "Good Afternoon"
+        else:
+            greeting = "Good Evening"
+        
+        speak(f"{greeting}! I'm Friday, your personal AI assistant. How may I help you today?")
+        return greeting
+    except Exception as e:
+        print(f"Error in greet_user: {e}")
+        return None
+
+# 2. TIME AND DATE
+def tell_time():
+    """Tell current time"""
+    try:
+        current_time = datetime.datetime.now().strftime("%I:%M %p")
+        speak(f"The time is {current_time}")
+        return current_time
+    except Exception as e:
+        print(f"Error in tell_time: {e}")
+        return None
+
+def tell_date():
+    """Tell current date"""
+    try:
+        today = datetime.datetime.now()
+        date_str = today.strftime("%A, %B %d, %Y")
+        speak(f"Today is {date_str}")
+        return date_str
+    except Exception as e:
+        print(f"Error in tell_date: {e}")
+        return None
+
+# 5. WEATHER
+def get_weather(city=None):
+    """Get weather information"""
+    try:
+        if not requests:
+            speak("Requests library not available")
+            return None
+        
+        if not OPENWEATHER_API_KEY:
+            speak("Weather API key not configured. Please add it to your dot env file")
+            return None
+            
+        if city is None:
+            city = "London"  # Default city
+        
+        base_url = "http://api.openweathermap.org/data/2.5/weather?"
+        complete_url = f"{base_url}appid={OPENWEATHER_API_KEY}&q={city}"
+        
+        response = requests.get(complete_url)
+        data = response.json()
+        
+        if data["cod"] != "404":
+            main = data["main"]
+            weather_desc = data["weather"][0]["description"]
+            temperature = round(main["temp"] - 273.15, 2)
+            humidity = main["humidity"]
+            
+            weather_report = f"Temperature in {city} is {temperature} degrees celsius with {weather_desc}. Humidity is {humidity} percent."
+            speak(weather_report)
+            return weather_report
+        else:
+            speak("City not found")
+            return None
+            
+    except Exception as e:
+        print(f"Error in get_weather: {e}")
+        speak("Unable to fetch weather information")
+        return None
+
+# 7. SYSTEM STATUS
+def get_system_status():
+    """Get system status"""
+    try:
+        if not psutil:
+            speak("Psutil library not available")
+            return None
+            
+        cpu_usage = psutil.cpu_percent(interval=1)
+        memory = psutil.virtual_memory()
+        ram_usage = memory.percent
+        ram_available = round(memory.available / (1024**3), 2)
+        
+        battery = psutil.sensors_battery()
+        if battery:
+            battery_percent = battery.percent
+            plugged = "plugged in" if battery.power_plugged else "not plugged in"
+            battery_status = f"Battery is at {battery_percent} percent and {plugged}"
+        else:
+            battery_status = "No battery found"
+        
+        status = f"CPU usage is {cpu_usage} percent. RAM usage is {ram_usage} percent with {ram_available} gigabytes available. {battery_status}."
+        speak(status)
+        
+        return {"cpu": cpu_usage, "ram": ram_usage, "battery": battery_percent if battery else None}
+        
+    except Exception as e:
+        print(f"Error in get_system_status: {e}")
+        speak("Unable to fetch system status")
+        return None
+
+# 9. WIKIPEDIA
+def search_wikipedia(query):
+    """Search Wikipedia"""
+    try:
+        if not wikipedia:
+            speak("Wikipedia library not available")
+            return None
+            
+        speak(f"Searching Wikipedia for {query}")
+        result = wikipedia.summary(query, sentences=3)
+        speak(result)
+        return result
+    except Exception as e:
+        print(f"Error in search_wikipedia: {e}")
+        speak("Unable to search Wikipedia")
+        return None
+
+# 10. GOOGLE SEARCH
+def google_search(query):
+    """Search on Google"""
+    try:
+        speak(f"Searching Google for {query}")
+        url = f"https://www.google.com/search?q={query}"
+        webbrowser.open(url)
+        return url
+    except Exception as e:
+        print(f"Error in google_search: {e}")
+        return None
+
+# 12. NEWS
+def get_news():
+    """Get top news headlines"""
+    try:
+        if not requests:
+            speak("Requests library not available")
+            return None
+        
+        if not NEWS_API_KEY:
+            # Fallback to Google News RSS if no API key
+            if BeautifulSoup:
+                try:
+                    url = "https://news.google.com/news/rss"
+                    response = requests.get(url)
+                    soup = BeautifulSoup(response.content, features='xml')
+                    
+                    headlines = soup.findAll('item')
+                    speak("Here are the top headlines")
+                    
+                    news_list = []
+                    for i, headline in enumerate(headlines[:5], 1):
+                        title = headline.title.text
+                        speak(f"Headline {i}: {title}")
+                        news_list.append(title)
+                    
+                    return news_list
+                except Exception as e:
+                    print(f"Error with Google News: {e}")
+                    speak("Unable to fetch news")
+                    return None
+            else:
+                speak("News API not configured and BeautifulSoup not available")
+                return None
+            
+        # Use NewsAPI if key is available
+        url = f"https://newsapi.org/v2/top-headlines?country=in&apiKey={NEWS_API_KEY}"
+        
+        response = requests.get(url)
+        news_data = response.json()
+        
+        if news_data["status"] == "ok":
+            articles = news_data["articles"][:5]
+            speak("Here are the top headlines")
+            
+            headlines = []
+            for i, article in enumerate(articles, 1):
+                headline = article["title"]
+                speak(f"Headline {i}: {headline}")
+                headlines.append(headline)
+            
+            return headlines
+        else:
+            speak("Unable to fetch news")
+            return None
+            
+    except Exception as e:
+        print(f"Error in get_news: {e}")
+        speak("Unable to fetch news")
+        return None
+
+# 13. PLAY MUSIC
+def play_music():
+    """Play local music"""
+    try:
+        music_dir = Path.home() / "Music"
+        
+        if music_dir.exists():
+            songs = list(music_dir.glob("*.mp3"))
+            
+            if songs:
+                song = str(songs[0])
+                os.startfile(song)
+                speak("Playing music")
+                return song
+            else:
+                speak("No music files found")
+                return None
+        else:
+            speak("Music folder not found")
+            return None
+            
+    except Exception as e:
+        print(f"Error in play_music: {e}")
+        speak("Unable to play music")
+        return None
+
+# 15. CALCULATE
+def calculate(expression):
+    """Calculate mathematical expression"""
+    try:
+        expression = expression.replace("calculate", "").replace("what is", "").strip()
+        expression = expression.replace("plus", "+").replace("minus", "-")
+        expression = expression.replace("multiply", "*").replace("divide", "/")
+        expression = expression.replace("x", "*")
+        
+        result = eval(expression)
+        speak(f"The answer is {result}")
+        return result
+        
+    except Exception as e:
+        print(f"Error in calculate: {e}")
+        speak("Unable to calculate")
+        return None
+
+# 17. TAKE NOTE
+def take_note(note):
+    """Take note in notepad"""
+    try:
+        date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"Note_{date}.txt"
+        filepath = Path.home() / "Documents" / filename
+        
+        with open(filepath, 'w') as f:
+            f.write(note)
+        
+        speak(f"Note saved as {filename}")
+        os.startfile(str(filepath))
+        return str(filepath)
+        
+    except Exception as e:
+        print(f"Error in take_note: {e}")
+        speak("Unable to save note")
+        return None
+
+# 18. JOKE
+def tell_joke():
+    """Tell a random joke"""
+    try:
+        if not pyjokes:
+            speak("Pyjokes library not available")
+            return None
+            
+        joke = pyjokes.get_joke()
+        speak(joke)
+        return joke
+    except Exception as e:
+        print(f"Error in tell_joke: {e}")
+        speak("Unable to tell a joke")
+        return None
+
+# 19. IP ADDRESS
+def get_ip_address():
+    """Get IP address"""
+    try:
+        hostname = socket.gethostname()
+        ip_address = socket.gethostbyname(hostname)
+        
+        speak(f"Your IP address is {ip_address}")
+        return ip_address
+    except Exception as e:
+        print(f"Error in get_ip_address: {e}")
+        speak("Unable to fetch IP address")
+        return None
+
+# 20. SWITCH WINDOW
+def switch_window():
+    """Switch active window"""
+    try:
+        if not pyautogui:
+            speak("Pyautogui not available")
+            return False
+            
+        pyautogui.keyDown("alt")
+        pyautogui.press("tab")
+        time.sleep(1)
+        pyautogui.keyUp("alt")
+        speak("Switching window")
+        return True
+    except Exception as e:
+        print(f"Error in switch_window: {e}")
+        return False
+
+# 21. SCREENSHOT
+def take_screenshot(filename=None):
+    """Take screenshot"""
+    try:
+        if not pyautogui:
+            speak("Pyautogui not available")
+            return None
+            
+        if filename is None:
+            filename = f"screenshot_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        
+        filepath = Path.home() / "Pictures" / filename
+        screenshot = pyautogui.screenshot()
+        screenshot.save(filepath)
+        
+        speak(f"Screenshot saved as {filename}")
+        return str(filepath)
+    except Exception as e:
+        print(f"Error in take_screenshot: {e}")
+        speak("Unable to take screenshot")
+        return None
+
+# 32. READ FILE
+def read_file(filepath):
+    """Read text or PDF file"""
+    try:
+        path = Path(filepath)
+        
+        if not path.exists():
+            speak("File not found")
+            return None
+        
+        if path.suffix in ['.txt', '.log', '.md']:
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                speak(f"Reading {path.name}")
+                speak(content[:500])
+                return content
+        
+        elif path.suffix == '.pdf' and PyPDF2:
+            with open(path, 'rb') as f:
+                pdf_reader = PyPDF2.PdfReader(f)
+                num_pages = len(pdf_reader.pages)
+                
+                speak(f"Reading PDF with {num_pages} pages")
+                page = pdf_reader.pages[0]
+                text = page.extract_text()
+                speak(text[:500])
+                return text
+        else:
+            speak("Unsupported file format")
+            return None
+            
+    except Exception as e:
+        print(f"Error in read_file: {e}")
+        speak("Unable to read file")
+        return None
+
+# 23. CLOSE APPLICATION
+def close_application(app_name):
+    """Close an application"""
+    try:
+        os.system(f"taskkill /f /im {app_name}.exe")
+        speak(f"Closed {app_name}")
+        return True
+    except Exception as e:
+        print(f"Error closing app: {e}")
+        speak(f"Could not close {app_name}")
+        return False
+
+# 33. HIDE/SHOW FILES
+def hide_file(filepath):
+    """Hide a file"""
+    try:
+        import ctypes
+        path = Path(filepath)
+        
+        if path.exists():
+            ctypes.windll.kernel32.SetFileAttributesW(str(path), 2)
+            speak(f"Hidden {path.name}")
+            return True
+        else:
+            speak("File not found")
+            return False
+    except Exception as e:
+        print(f"Error hiding file: {e}")
+        speak("Unable to hide file")
+        return False
+
+def unhide_file(filepath):
+    """Unhide a file"""
+    try:
+        import ctypes
+        path = Path(filepath)
+        
+        if path.exists():
+            ctypes.windll.kernel32.SetFileAttributesW(str(path), 128)
+            speak(f"Unhidden {path.name}")
+            return True
+        else:
+            speak("File not found")
+            return False
+    except Exception as e:
+        print(f"Error unhiding file: {e}")
+        speak("Unable to unhide file")
+        return False
+
+def delete_file(filepath):
+    """Delete a file"""
+    try:
+        path = Path(filepath)
+        
+        if path.exists():
+            if path.is_file():
+                path.unlink()
+                speak(f"Deleted {path.name}")
+                return True
+            elif path.is_dir():
+                import shutil
+                shutil.rmtree(path)
+                speak(f"Deleted folder {path.name}")
+                return True
+        else:
+            speak("File not found")
+            return False
+    except Exception as e:
+        print(f"Error deleting file: {e}")
+        speak("Unable to delete file")
+        return False
+
+# 24. INSTAGRAM INFO
+def get_instagram_info(username):
+    """Get Instagram profile information"""
+    try:
+        if not instaloader:
+            speak("Instaloader library not available")
+            return None
+            
+        L = instaloader.Instaloader()
+        speak(f"Fetching Instagram profile for {username}")
+        
+        profile = instaloader.Profile.from_username(L.context, username)
+        
+        info = f"{username} has {profile.followers} followers and {profile.followees} following. Total posts: {profile.mediacount}."
+        speak(info)
+        
+        return {
+            "username": username,
+            "followers": profile.followers,
+            "following": profile.followees,
+            "posts": profile.mediacount
+        }
+        
+    except Exception as e:
+        print(f"Error in get_instagram_info: {e}")
+        speak("Unable to fetch Instagram profile")
+        return None
+    
+def ask_wolframalpha(query):
+    """Ask Wolframalpha"""
+    try:
+        try:
+            import wolframalpha
+        except ImportError:
+            speak("Wolfram Alpha library not installed. Please run: pip install wolframalpha")
+            return None
+        
+        if not WOLFRAMALPHA_APP_ID:
+            speak("Wolfram Alpha API not configured. Please add your App ID to the dot env file")
+            return None
+            
+        client = wolframalpha.Client(WOLFRAMALPHA_APP_ID)
+        
+        speak(f"Asking Wolfram Alpha: {query}")
+        res = client.query(query)
+        
+        try:
+            answer = next(res.results).text
+            speak(answer)
+            return answer
+        except StopIteration:
+            speak("No results found from Wolfram Alpha")
+            return None
+            
+    except Exception as e:
+        print(f"Error in ask_wolframalpha: {e}")
+        speak("Unable to get answer from Wolfram Alpha")
+        return None
+    
+def send_email(to, subject, content):
+    """Send email via Gmail"""
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
+            speak("Email credentials not configured in dot env file")
+            return False
+        
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = to
+        msg['Subject'] = subject
+        
+        msg.attach(MIMEText(content, 'plain'))
+        
+        # Send email
+        speak("Sending email...")
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        text = msg.as_string()
+        server.sendmail(EMAIL_ADDRESS, to, text)
+        server.quit()
+        
+        speak("Email sent successfully")
+        return True
+        
+    except Exception as e:
+        print(f"Error in send_email: {e}")
+        speak("Unable to send email. Please check your email configuration")
+        return False
