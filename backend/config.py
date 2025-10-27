@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import os
 from pathlib import Path
 
@@ -62,7 +62,6 @@ if __name__ == "__main__":
     print(f"News API: {'✅ Loaded' if NEWS_API_KEY else '❌ Missing'}")
     print(f"Wolfram Alpha: {'✅ Loaded' if WOLFRAMALPHA_APP_ID else '❌ Missing'}")
     print(f"Email Config: {'✅ Loaded' if EMAIL_ADDRESS and EMAIL_PASSWORD else '❌ Missing'}")
-=======
 import os
 from pathlib import Path
 
@@ -126,5 +125,3 @@ if __name__ == "__main__":
     print(f"News API: {'✅ Loaded' if NEWS_API_KEY else '❌ Missing'}")
     print(f"Wolfram Alpha: {'✅ Loaded' if WOLFRAMALPHA_APP_ID else '❌ Missing'}")
     print(f"Email Config: {'✅ Loaded' if EMAIL_ADDRESS and EMAIL_PASSWORD else '❌ Missing'}")
->>>>>>> aee3ec9 (New Features Added)
-    print("=" * 50 + "\n")

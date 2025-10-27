@@ -5,72 +5,87 @@ import threading
 from backend.talk import speak, safe_eel_call 
 
 LISTENING = False 
+CONTINUOUS_MODE = False
+PROCESSING = False
 
-def takecommand():
+def takecommand():    
+    global PROCESSING
     try:
         r = sr.Recognizer()
         with sr.Microphone() as source:
-            print("I'm listening...")
+            print("🎤 I'm listening...")
             safe_eel_call('DisplayMessage', "I'm listening...")
-            safe_eel_call('ShowWave') 
+            safe_eel_call('updateStatus', 'listening')
             r.pause_threshold = 1
-            r.adjust_for_ambient_noise(source)
-            audio = r.listen(source, 10, 8)
-        
-        print("Recognizing...")
+            r.adjust_for_ambient_noise(source, duration=0.5)
+            audio = r.listen(source, timeout=10, phrase_time_limit=8)
+    except Exception as e:
+        print(f"❌ Microphone error: {str(e)}")
+        return None
+    
+    try:    
+        print("🔍 Recognizing...")
         safe_eel_call('DisplayMessage', "Recognizing...")
+        safe_eel_call('updateStatus', 'processing')
         query = r.recognize_google(audio, language='en-US')
-        print(f"User said: {query}\n")
+        print(f"✅ User said: {query}\n")
         safe_eel_call('DisplayMessage', query)
         return query.lower()
     except sr.UnknownValueError:
-        print("Could not understand audio")
+        print("❌ Could not understand audio")
         safe_eel_call('DisplayMessage', "Sorry, I didn't catch that")
         return None
     except sr.RequestError as e:
-        print(f"Google API error: {str(e)}")
+        print(f"❌ Google API error: {str(e)}")
         safe_eel_call('DisplayMessage', "API error")
         return None
     except Exception as e:
-        print(f"Error in takecommand: {str(e)}")
+        print(f"❌ Error in takecommand: {str(e)}")
         return None
 
 @eel.expose
 def takeAllCommands(message=None):
-    global LISTENING
+    global LISTENING, PROCESSING
     
     try:
         query = None
+        PROCESSING = True
+        safe_eel_call('updateStatus', 'processing')
         
         if message is None:
             query = takecommand()
             if not query:
-                safe_eel_call('ShowHood')
+                PROCESSING = False
+                safe_eel_call('updateStatus', 'listening' if CONTINUOUS_MODE else 'inactive')
                 return
-            print(query)
             safe_eel_call('senderText', query)
         else:
             query = message
-            print(f"Message received: {query}")
             safe_eel_call('senderText', query)
         
         if query:
-            try:
-                if "time to sleep" in query or "go to sleep" in query or "sleep friday" in query or "stop listening" in query or "sleep mode" in query:
-                    speak("Okay, going to sleep mode. Say 'wake up Friday' or click my icon to activate me again.")
-                    LISTENING = False
-                    safe_eel_call('ShowHood')
+            # ✅ SLEEP MODE COMMANDS
+            if "time to sleep" in query or "go to sleep" in query or "sleep friday" in query or "stop listening" in query or "sleep mode" in query:
+                speak("Okay, going to sleep mode. Say 'wake up Friday' or click my icon to activate me again.")
+                stop_assistant()
+                PROCESSING = False
+                return
+            
+            # ✅ WAKE UP COMMANDS (if in sleep mode)
+            if not LISTENING:
+                if "wake up" in query or "hello friday" in query or "hey friday" in query or "activate" in query:
+                    LISTENING = True
+                    speak("I'm awake and ready to help!")
+                    safe_eel_call('updateStatus', 'listening')
+                    PROCESSING = False
                     return
-                
-                if not LISTENING:
-                    if "wake up" in query or "hello friday" in query or "hey friday" in query or "activate" in query:
-                        LISTENING = True
-                        speak("I'm awake and ready to help!")
-                        return
-                    else:
-                        print("🔴 SLEEP MODE - Ignoring command")
-                        return
-                
+                else:
+                    print("🔴 SLEEP MODE - Ignoring command")
+                    PROCESSING = False
+                    return
+            
+            # ✅ EXECUTE COMMANDS
+            try:
                 from backend.feature import (
                     openCommand, PlayYoutube, findContact, whatsApp, chatBot,
                     greet_user, tell_time, tell_date, get_weather, get_system_status,
@@ -216,48 +231,69 @@ def takeAllCommands(message=None):
                     speak("Thank you! I'm glad I could help. Is there anything else you need?")
                 else:
                     chatBot(query)
-                    
-            except ImportError as e:
-                print(f"Module import error: {str(e)}")
-                speak("Feature not available. Some dependencies might be missing.")
             except Exception as e:
-                print(f"Command execution error: {str(e)}")
-                import traceback
-                traceback.print_exc()
-                speak("Sorry, something went wrong.")
-        
+                print(f"❌ Error in command: {str(e)}")
+                speak("Something went wrong")
+                    
     except Exception as e:
-        print(f"Error in takeAllCommands: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        speak("An error occurred. Please try again.")
+        print(f"❌ Error: {str(e)}")
     finally:
-        if LISTENING:
-            safe_eel_call('ShowHood')
+        PROCESSING = False
+        if CONTINUOUS_MODE and LISTENING:
+            safe_eel_call('updateStatus', 'listening')
+        else:
+            safe_eel_call('updateStatus', 'inactive')
 
+# ✅ CONTINUOUS LISTENING LOOP
 def assistant_loop():
+    global CONTINUOUS_MODE, LISTENING, PROCESSING
+    
+    print("🔄 Assistant loop started!")
+    
     while True:
         try:
-            if LISTENING:
+            if CONTINUOUS_MODE and LISTENING and not PROCESSING:
+                print("🎤 Continuous mode: Waiting for command...")
                 takeAllCommands()
+                time.sleep(0.5)
             else:
-                time.sleep(0.2)
+                time.sleep(0.3)
         except Exception as e:
-            print(f"Error in assistant_loop: {e}")
+            print(f"❌ Error in assistant_loop: {e}")
             time.sleep(1)
 
 @eel.expose
 def start_assistant():
-    global LISTENING
-    LISTENING = True
+    """Start continuous listening mode"""
+    global LISTENING, CONTINUOUS_MODE
     
+    print("🚀 start_assistant() called!")
+    LISTENING = True
+    CONTINUOUS_MODE = True
+    
+    # Start the loop in a separate thread
     thread = threading.Thread(target=assistant_loop, daemon=True)
     thread.start()
-    speak("Friday is now active.")
+    print("✅ Listening thread started!")
+    
+    speak("Continuous mode activated. I'm listening.")
+    safe_eel_call('enableContinuousMode')
+    safe_eel_call('updateStatus', 'listening')
     
 @eel.expose
+def stop_assistant():
+    """Stop continuous listening mode"""
+    global LISTENING, CONTINUOUS_MODE
+    
+    print("🛑 stop_assistant() called!")
+    CONTINUOUS_MODE = False
+    LISTENING = False
+    
+    speak("Continuous mode deactivated.")
+    safe_eel_call('disableContinuousMode')
+    safe_eel_call('updateStatus', 'inactive')
+
+@eel.expose
 def wakeup_by_ui():
-    global LISTENING
-    if not LISTENING:
-        LISTENING = True
-        speak("I'm listening.")
+    """Wake up assistant by UI click"""
+    start_assistant()

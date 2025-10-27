@@ -6,12 +6,12 @@ try:
     from backend.auth import recoganize
     from backend.auth.recoganize import AuthenticateFace
     from backend.feature import play_assistant_sound
-    from backend.command import speak, takeAllCommands
+    from backend.talk import speak
+    from backend.command import start_assistant  # ✅ IMPORT THIS
 except ImportError as e:
     print(f"Error importing modules: {str(e)}")
     exit(1)
 
-# Move eel.init() and exposed functions to module level
 frontend_path = Path("frontend")
 if not frontend_path.exists():
     print(f"Error: Frontend directory not found at {frontend_path}")
@@ -19,7 +19,6 @@ if not frontend_path.exists():
 
 eel.init("frontend")
 
-# Define exposed functions at module level (NOT inside start())
 @eel.expose
 def init():
     """Initialize the assistant with face authentication"""
@@ -71,6 +70,14 @@ def init():
             except Exception as e:
                 print(f"Error playing sound: {e}")
             
+            # ✅ AUTOMATICALLY START CONTINUOUS MODE
+            print("🚀 Starting continuous listening mode...")
+            try:
+                start_assistant()  # This will start the continuous loop
+                print("✅ Continuous mode activated!")
+            except Exception as e:
+                print(f"Error starting assistant: {e}")
+            
             return {"status": "success", "authenticated": True}
         else:
             print("Authentication failed")
@@ -87,19 +94,16 @@ def init():
 def start():
     """Start the Eel application"""
     try:
-        # Play initial sound
         try:
             play_assistant_sound()
         except Exception as e:
             print(f"Error playing sound: {str(e)}")
         
-        # Start browser
         try:
             os.system('start msedge.exe --app="http://127.0.0.1:8000/index.html"')
         except Exception as e:
             print(f"Error starting browser: {str(e)}")
         
-        # Start Eel server
         try:
             eel.start("index.html", mode=None, host="localhost", port=8000, block=True)
         except Exception as e:

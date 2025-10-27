@@ -1,107 +1,109 @@
 $(document).ready(function () {
-  // Display Speak Message
+  
+  // ✅ DISPLAY MESSAGE
   eel.expose(DisplayMessage);
   function DisplayMessage(message) {
     try {
       $(".siri-message li:first").text(message);
       $(".siri-message").textillate("start");
     } catch (error) {
-      console.error("Error in DisplayMessage:", error);
+      console.error("Error:", error);
     }
   }
 
-  eel.expose(ShowHood);
-  function ShowHood() {
-    try {
-      $("#Oval").attr("hidden", false);
-      $("#SiriWave").attr("hidden", true);
-    } catch (error) {
-      console.error("Error in ShowHood:", error);
+  // ✅ UPDATE STATUS INDICATOR
+  eel.expose(updateStatus);
+  function updateStatus(status) {
+    const indicator = $("#status-indicator");
+    const text = $("#status-text");
+    
+    indicator.removeClass("status-inactive status-active status-processing");
+    
+    if (status === "listening") {
+      indicator.addClass("status-active");
+      text.text("LISTENING");
+    } else if (status === "processing") {
+      indicator.addClass("status-processing");
+      text.text("PROCESSING");
+    } else {
+      indicator.addClass("status-inactive");
+      text.text("STANDBY");
     }
   }
 
+  // ✅ ENABLE CONTINUOUS MODE UI
+  eel.expose(enableContinuousMode);
+  function enableContinuousMode() {
+    $("#listening-mode").fadeIn();
+    $("#stopBtn").fadeIn();
+  }
+
+  // ✅ DISABLE CONTINUOUS MODE UI
+  eel.expose(disableContinuousMode);
+  function disableContinuousMode() {
+    $("#listening-mode").fadeOut();
+    $("#stopBtn").fadeOut();
+  }
+
+  // ✅ SENDER TEXT
   eel.expose(senderText);
   function senderText(message) {
     try {
       var chatBox = document.getElementById("chat-canvas-body");
-      if (message.trim() !== "") {
+      if (chatBox && message.trim() !== "") {
         chatBox.innerHTML += `<div class="row justify-content-end mb-4">
-            <div class = "width-size">
+          <div class="width-size">
             <div class="sender_message">${message}</div>
+          </div>
         </div>`;
-
         chatBox.scrollTop = chatBox.scrollHeight;
       }
     } catch (error) {
-      console.error("Error in senderText:", error);
+      console.error("Error:", error);
     }
   }
 
+  // ✅ RECEIVER TEXT
   eel.expose(receiverText);
   function receiverText(message) {
     try {
       var chatBox = document.getElementById("chat-canvas-body");
-      if (message.trim() !== "") {
+      if (chatBox && message.trim() !== "") {
         chatBox.innerHTML += `<div class="row justify-content-start mb-4">
-            <div class = "width-size">
+          <div class="width-size">
             <div class="receiver_message">${message}</div>
-            </div>
+          </div>
         </div>`;
-
-        // Scroll to the bottom of the chat box
         chatBox.scrollTop = chatBox.scrollHeight;
       }
     } catch (error) {
-      console.error("Error in receiverText:", error);
+      console.error("Error:", error);
     }
   }
 
   eel.expose(hideLoader);
   function hideLoader() {
-    try {
-      $("#Loader").attr("hidden", true);
-      $("#FaceAuth").attr("hidden", false);
-    } catch (error) {
-      console.error("Error in hideLoader:", error);
-    }
+    $("#Loader").attr("hidden", true);
+    $("#FaceAuth").attr("hidden", false);
   }
 
-  // Hide Face auth and display Face Auth success animation
   eel.expose(hideFaceAuth);
   function hideFaceAuth() {
-    try {
-      $("#FaceAuth").attr("hidden", true);
-      $("#FaceAuthSuccess").attr("hidden", false);
-    } catch (error) {
-      console.error("Error in hideFaceAuth:", error);
-    }
+    $("#FaceAuth").attr("hidden", true);
+    $("#FaceAuthSuccess").attr("hidden", false);
   }
 
-  // Hide success and display
   eel.expose(hideFaceAuthSuccess);
   function hideFaceAuthSuccess() {
-    try {
-      $("#FaceAuthSuccess").attr("hidden", true);
-      $("#HelloGreet").attr("hidden", false);
-    } catch (error) {
-      console.error("Error in hideFaceAuthSuccess:", error);
-    }
+    $("#FaceAuthSuccess").attr("hidden", true);
+    $("#HelloGreet").attr("hidden", false);
   }
 
-  // Hide Start Page and display blob
   eel.expose(hideStart);
   function hideStart() {
-    try {
-      $("#Start").attr("hidden", true);
-
-      setTimeout(function () {
-        $("#Oval").addClass("animate__animated animate__zoomIn");
-      }, 1000);
-      setTimeout(function () {
-        $("#Oval").attr("hidden", false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error in hideStart:", error);
-    }
+    $("#Start").attr("hidden", true);
+    setTimeout(function () {
+      $("#Oval").attr("hidden", false);
+    }, 1000);
   }
 });
