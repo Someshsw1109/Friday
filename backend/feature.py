@@ -12,7 +12,6 @@ from pathlib import Path
 import asyncio
 import socket
 
-# Core imports
 try:
     from EdgeGPT.EdgeGPT import Chatbot, ConversationStyle
     EDGEGPT_AVAILABLE = True
@@ -52,7 +51,6 @@ except ImportError as e:
     pygame = None
     print(f"Warning: Missing dependency - {str(e)}")
 
-# Advanced feature imports
 try:
     import wikipedia
 except ImportError as e:
@@ -95,13 +93,11 @@ except ImportError as e:
     instaloader = None
     print(f"Warning: instaloader not installed - {str(e)}")
 
-from backend.command import speak
+from backend.talk import speak
 from backend.config import ASSISTANT_NAME, EMAIL_ADDRESS, EMAIL_PASSWORD, NEWS_API_KEY, OPENWEATHER_API_KEY, PORCUPINE_ACCESS_KEY, WOLFRAMALPHA_APP_ID
 import sqlite3
-
 from backend.helper import extract_yt_term, remove_words
 
-# Initialize database connection
 conn = None
 cursor = None
 try:
@@ -110,20 +106,14 @@ try:
 except Exception as e:
     print(f"Error connecting to database: {str(e)}")
 
-# Initialize pygame mixer
 try:
     if pygame:
         pygame.mixer.init()
 except Exception as e:
     print(f"Warning: pygame mixer initialization failed: {e}")
 
-# =================================
-# EXISTING FUNCTIONS
-# =================================
-
 @eel.expose
 def play_assistant_sound():
-    """Play the assistant sound"""
     try:
         if not pygame:
             print("pygame not available")
@@ -143,9 +133,7 @@ def play_assistant_sound():
         return {"status": "error", "message": str(e)}
 
 def openCommand(query):
-    """Open applications or websites"""
     try:
-        # Remove common wake words and command words
         query = query.lower()
         query = query.replace("jarvis", "").replace("friday", "")
         query = query.replace(ASSISTANT_NAME.lower(), "")
@@ -158,49 +146,26 @@ def openCommand(query):
         
         print(f"Processed query: '{query}'")
         
-        # Common applications with their commands
         common_apps = {
-            "notepad": "notepad.exe",
-            "calculator": "calc.exe",
-            "paint": "mspaint.exe",
-            "chrome": "chrome.exe",
-            "google chrome": "chrome.exe",
-            "edge": "msedge.exe",
-            "microsoft edge": "msedge.exe",
-            "browser": "msedge.exe",
-            "word": "winword.exe",
-            "microsoft word": "winword.exe",
-            "excel": "excel.exe",
-            "microsoft excel": "excel.exe",
-            "powerpoint": "powerpnt.exe",
-            "task manager": "taskmgr.exe",
-            "control panel": "control.exe",
-            "cmd": "cmd.exe",
-            "command prompt": "cmd.exe",
-            "file explorer": "explorer.exe",
-            "explorer": "explorer.exe",
-            "settings": "ms-settings:",
-            "camera": "microsoft.windows.camera:",
+            "notepad": "notepad.exe", "calculator": "calc.exe", "paint": "mspaint.exe",
+            "chrome": "chrome.exe", "google chrome": "chrome.exe", "edge": "msedge.exe",
+            "microsoft edge": "msedge.exe", "browser": "msedge.exe", "word": "winword.exe",
+            "microsoft word": "winword.exe", "excel": "excel.exe", "microsoft excel": "excel.exe",
+            "powerpoint": "powerpnt.exe", "task manager": "taskmgr.exe", "control panel": "control.exe",
+            "cmd": "cmd.exe", "command prompt": "cmd.exe", "file explorer": "explorer.exe",
+            "explorer": "explorer.exe", "settings": "ms-settings:", "camera": "microsoft.windows.camera:",
         }
         
-        # Common websites
         common_websites = {
-            "youtube": "https://www.youtube.com",
-            "google": "https://www.google.com",
-            "gmail": "https://mail.google.com",
-            "facebook": "https://www.facebook.com",
-            "twitter": "https://www.twitter.com",
-            "instagram": "https://www.instagram.com",
-            "github": "https://www.github.com",
-            "linkedin": "https://www.linkedin.com",
-            "reddit": "https://www.reddit.com",
-            "netflix": "https://www.netflix.com",
-            "amazon": "https://www.amazon.com",
-            "whatsapp": "https://web.whatsapp.com",
+            "youtube": "https://www.youtube.com", "google": "https://www.google.com",
+            "gmail": "https://mail.google.com", "facebook": "https://www.facebook.com",
+            "twitter": "https://www.twitter.com", "instagram": "https://www.instagram.com",
+            "github": "https://www.github.com", "linkedin": "https://www.linkedin.com",
+            "reddit": "https://www.reddit.com", "netflix": "https://www.netflix.com",
+            "amazon": "https://www.amazon.com", "whatsapp": "https://web.whatsapp.com",
             "telegram": "https://web.telegram.org",
         }
         
-        # Check if it's a common app
         if query in common_apps:
             speak(f"Opening {query}")
             try:
@@ -209,13 +174,11 @@ def openCommand(query):
             except Exception as e:
                 print(f"Error opening {query}: {e}")
         
-        # Check if it's a common website
         elif query in common_websites:
             speak(f"Opening {query}")
             webbrowser.open(common_websites[query])
             return
         
-        # Try database (if available)
         elif cursor is not None:
             try:
                 cursor.execute('SELECT path FROM sys_command WHERE LOWER(name) = ?', (query,))
@@ -237,7 +200,6 @@ def openCommand(query):
             except Exception as e:
                 print(f"Database error: {e}")
         
-        # Last resort: try as system command
         speak(f"Trying to open {query}")
         try:
             os.system(f'start {query}')
@@ -250,7 +212,6 @@ def openCommand(query):
         speak("Something went wrong")
 
 def PlayYoutube(query):
-    """Play video on YouTube"""
     try:
         search_term = extract_yt_term(query) if query else query
         speak("Playing " + search_term + " on YouTube")
@@ -266,7 +227,6 @@ def PlayYoutube(query):
         speak("Error playing YouTube video")
 
 def hotword():
-    """Listen for hotword (Friday) and trigger action"""
     porcupine = None
     paud = None
     audio_stream = None
@@ -283,11 +243,7 @@ def hotword():
         print("Initializing hotword detection...")
         
         try:
-            porcupine = pvporcupine.create(
-                access_key=PORCUPINE_ACCESS_KEY,
-                keywords=["jarvis"]  # ✅ Changed from "alexa" to "jarvis"
-                # Note: Porcupine doesn't have "friday" built-in, "jarvis" is closest
-            )
+            porcupine = pvporcupine.create(access_key=PORCUPINE_ACCESS_KEY, keywords=["jarvis"])
             print("Porcupine initialized successfully")
         except Exception as e:
             print(f"Error initializing Porcupine: {str(e)}")
@@ -295,13 +251,7 @@ def hotword():
         
         try:
             paud = pyaudio.PyAudio()
-            audio_stream = paud.open(
-                rate=porcupine.sample_rate,
-                channels=1,
-                format=pyaudio.paInt16,
-                input=True,
-                frames_per_buffer=porcupine.frame_length
-            )
+            audio_stream = paud.open(rate=porcupine.sample_rate, channels=1, format=pyaudio.paInt16, input=True, frames_per_buffer=porcupine.frame_length)
             print("Audio stream opened successfully")
         except Exception as e:
             print(f"Error initializing audio: {str(e)}")
@@ -316,12 +266,10 @@ def hotword():
                 try:
                     pcm = audio_stream.read(porcupine.frame_length, exception_on_overflow=False)
                     pcm = struct.unpack_from("h" * porcupine.frame_length, pcm)
-                    
                     keyword_index = porcupine.process(pcm)
                     
                     if keyword_index >= 0:
-                        print("Hotword 'Friday' detected!")  # ✅ Updated message
-                        
+                        print("Hotword 'Friday' detected!")
                         try:
                             if pyautogui:
                                 pyautogui.keyDown("win")
@@ -355,7 +303,6 @@ def hotword():
         print(f"Error in hotword: {str(e)}")
 
 def findContact(query):
-    """Find contact in database"""
     try:
         if cursor is None:
             speak('Database connection error')
@@ -370,10 +317,7 @@ def findContact(query):
             return 0, 0
         
         try:
-            cursor.execute(
-                "SELECT Phone FROM contacts WHERE LOWER(name) LIKE ? OR LOWER(name) LIKE ?",
-                ('%' + query + '%', query + '%')
-            )
+            cursor.execute("SELECT Phone FROM contacts WHERE LOWER(name) LIKE ? OR LOWER(name) LIKE ?", ('%' + query + '%', query + '%'))
             results = cursor.fetchall()
             
             if results:
@@ -396,7 +340,6 @@ def findContact(query):
         return 0, 0
 
 def whatsApp(Phone, message, flag, name):
-    """Send WhatsApp message or make call"""
     try:
         if flag == 'message':
             target_tab = 12
@@ -435,7 +378,6 @@ def whatsApp(Phone, message, flag, name):
         print(f"Error in whatsApp: {str(e)}")
 
 async def chatBot_async(query):
-    """Async Bing Chat function"""
     try:
         if not EDGEGPT_AVAILABLE:
             print("EdgeGPT not available")
@@ -478,10 +420,7 @@ async def chatBot_async(query):
             bot = await Chatbot.create(cookies=cookies)
             print(f"Asking Bing: {user_input}")
             
-            response = await bot.ask(
-                prompt=user_input,
-                conversation_style=ConversationStyle.balanced
-            )
+            response = await bot.ask(prompt=user_input, conversation_style=ConversationStyle.balanced)
             
             response_text = None
             
@@ -563,7 +502,6 @@ async def chatBot_async(query):
         return "Something went wrong with the chatbot."
 
 def chatBot(query):
-    """Chat with Bing AI (synchronous wrapper)"""
     try:
         loop = None
         try:
@@ -591,13 +529,7 @@ def chatBot(query):
         speak("Something went wrong with the chatbot")
         return None
 
-# =================================
-# NEW ADVANCED FEATURES
-# =================================
-
-# 1. GREET USER
 def greet_user():
-    """Greet user based on time"""
     try:
         hour = datetime.datetime.now().hour
         
@@ -614,9 +546,7 @@ def greet_user():
         print(f"Error in greet_user: {e}")
         return None
 
-# 2. TIME AND DATE
 def tell_time():
-    """Tell current time"""
     try:
         current_time = datetime.datetime.now().strftime("%I:%M %p")
         speak(f"The time is {current_time}")
@@ -626,7 +556,6 @@ def tell_time():
         return None
 
 def tell_date():
-    """Tell current date"""
     try:
         today = datetime.datetime.now()
         date_str = today.strftime("%A, %B %d, %Y")
@@ -636,9 +565,7 @@ def tell_date():
         print(f"Error in tell_date: {e}")
         return None
 
-# 5. WEATHER
 def get_weather(city=None):
-    """Get weather information"""
     try:
         if not requests:
             speak("Requests library not available")
@@ -649,7 +576,7 @@ def get_weather(city=None):
             return None
             
         if city is None:
-            city = "London"  # Default city
+            city = "London"
         
         base_url = "http://api.openweathermap.org/data/2.5/weather?"
         complete_url = f"{base_url}appid={OPENWEATHER_API_KEY}&q={city}"
@@ -675,9 +602,7 @@ def get_weather(city=None):
         speak("Unable to fetch weather information")
         return None
 
-# 7. SYSTEM STATUS
 def get_system_status():
-    """Get system status"""
     try:
         if not psutil:
             speak("Psutil library not available")
@@ -706,9 +631,7 @@ def get_system_status():
         speak("Unable to fetch system status")
         return None
 
-# 9. WIKIPEDIA
 def search_wikipedia(query):
-    """Search Wikipedia"""
     try:
         if not wikipedia:
             speak("Wikipedia library not available")
@@ -723,9 +646,7 @@ def search_wikipedia(query):
         speak("Unable to search Wikipedia")
         return None
 
-# 10. GOOGLE SEARCH
 def google_search(query):
-    """Search on Google"""
     try:
         speak(f"Searching Google for {query}")
         url = f"https://www.google.com/search?q={query}"
@@ -735,69 +656,57 @@ def google_search(query):
         print(f"Error in google_search: {e}")
         return None
 
-# 12. NEWS
 def get_news():
-    """Get top news headlines"""
-    try:
-        if not requests:
-            speak("Requests library not available")
-            return None
-        
-        if not NEWS_API_KEY:
-            # Fallback to Google News RSS if no API key
-            if BeautifulSoup:
-                try:
-                    url = "https://news.google.com/news/rss"
-                    response = requests.get(url)
-                    soup = BeautifulSoup(response.content, features='xml')
-                    
-                    headlines = soup.findAll('item')
-                    speak("Here are the top headlines")
-                    
-                    news_list = []
-                    for i, headline in enumerate(headlines[:5], 1):
-                        title = headline.title.text
-                        speak(f"Headline {i}: {title}")
-                        news_list.append(title)
-                    
-                    return news_list
-                except Exception as e:
-                    print(f"Error with Google News: {e}")
-                    speak("Unable to fetch news")
-                    return None
-            else:
-                speak("News API not configured and BeautifulSoup not available")
-                return None
-            
-        # Use NewsAPI if key is available
-        url = f"https://newsapi.org/v2/top-headlines?country=in&apiKey={NEWS_API_KEY}"
-        
-        response = requests.get(url)
-        news_data = response.json()
-        
-        if news_data["status"] == "ok":
-            articles = news_data["articles"][:5]
-            speak("Here are the top headlines")
-            
-            headlines = []
-            for i, article in enumerate(articles, 1):
-                headline = article["title"]
-                speak(f"Headline {i}: {headline}")
-                headlines.append(headline)
-            
-            return headlines
-        else:
-            speak("Unable to fetch news")
-            return None
-            
-    except Exception as e:
-        print(f"Error in get_news: {e}")
-        speak("Unable to fetch news")
+    if not requests:
+        speak("Requests library not available. Please install it to use the news feature.")
+        return None
+    
+    if not NEWS_API_KEY:
+        speak("News API key is not configured. Please add it to your dot env file to get news updates.")
         return None
 
-# 13. PLAY MUSIC
+    url = f"https://newsapi.org/v2/top-headlines?country=in&apiKey={NEWS_API_KEY}"
+    
+    try:
+        print("Fetching news from API...")
+        response = requests.get(url)
+        news_data = response.json()
+
+        if news_data.get("status") == "ok":
+            
+            articles = news_data.get("articles", [])
+            
+            if not articles:
+                speak("Sorry, I couldn't find any news articles at the moment.")
+                return None
+
+            speak("Here are the top 5 headlines from India.")
+            
+            for i, article in enumerate(articles[:5]):
+                title = article.get('title', 'No title available')
+                
+                print(f"Headline {i+1}: {title}")
+                
+                speak(f"Headline number {i+1}. {title}")
+            
+            return [article.get('title') for article in articles[:5]]
+            
+        else:
+            error_message = news_data.get("message", "Unknown API error.")
+            print(f"News API Error: {error_message}")
+            speak("Sorry, I couldn't fetch the news. The API reported an error.")
+            return None
+
+    except requests.exceptions.RequestException as e:
+        print(f"Network error while fetching news: {e}")
+        speak("I am unable to connect to the news service. Please check your internet connection.")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred in get_news: {e}")
+        speak("An unexpected error occurred while trying to get the news.")
+        return None
+
 def play_music():
-    """Play local music"""
     try:
         music_dir = Path.home() / "Music"
         
@@ -821,9 +730,7 @@ def play_music():
         speak("Unable to play music")
         return None
 
-# 15. CALCULATE
 def calculate(expression):
-    """Calculate mathematical expression"""
     try:
         expression = expression.replace("calculate", "").replace("what is", "").strip()
         expression = expression.replace("plus", "+").replace("minus", "-")
@@ -839,9 +746,7 @@ def calculate(expression):
         speak("Unable to calculate")
         return None
 
-# 17. TAKE NOTE
 def take_note(note):
-    """Take note in notepad"""
     try:
         date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         filename = f"Note_{date}.txt"
@@ -859,9 +764,7 @@ def take_note(note):
         speak("Unable to save note")
         return None
 
-# 18. JOKE
 def tell_joke():
-    """Tell a random joke"""
     try:
         if not pyjokes:
             speak("Pyjokes library not available")
@@ -875,9 +778,7 @@ def tell_joke():
         speak("Unable to tell a joke")
         return None
 
-# 19. IP ADDRESS
 def get_ip_address():
-    """Get IP address"""
     try:
         hostname = socket.gethostname()
         ip_address = socket.gethostbyname(hostname)
@@ -889,9 +790,7 @@ def get_ip_address():
         speak("Unable to fetch IP address")
         return None
 
-# 20. SWITCH WINDOW
 def switch_window():
-    """Switch active window"""
     try:
         if not pyautogui:
             speak("Pyautogui not available")
@@ -907,9 +806,7 @@ def switch_window():
         print(f"Error in switch_window: {e}")
         return False
 
-# 21. SCREENSHOT
 def take_screenshot(filename=None):
-    """Take screenshot"""
     try:
         if not pyautogui:
             speak("Pyautogui not available")
@@ -929,9 +826,7 @@ def take_screenshot(filename=None):
         speak("Unable to take screenshot")
         return None
 
-# 32. READ FILE
 def read_file(filepath):
-    """Read text or PDF file"""
     try:
         path = Path(filepath)
         
@@ -965,9 +860,7 @@ def read_file(filepath):
         speak("Unable to read file")
         return None
 
-# 23. CLOSE APPLICATION
 def close_application(app_name):
-    """Close an application"""
     try:
         os.system(f"taskkill /f /im {app_name}.exe")
         speak(f"Closed {app_name}")
@@ -977,9 +870,7 @@ def close_application(app_name):
         speak(f"Could not close {app_name}")
         return False
 
-# 33. HIDE/SHOW FILES
 def hide_file(filepath):
-    """Hide a file"""
     try:
         import ctypes
         path = Path(filepath)
@@ -997,7 +888,6 @@ def hide_file(filepath):
         return False
 
 def unhide_file(filepath):
-    """Unhide a file"""
     try:
         import ctypes
         path = Path(filepath)
@@ -1015,7 +905,6 @@ def unhide_file(filepath):
         return False
 
 def delete_file(filepath):
-    """Delete a file"""
     try:
         path = Path(filepath)
         
@@ -1037,9 +926,7 @@ def delete_file(filepath):
         speak("Unable to delete file")
         return False
 
-# 24. INSTAGRAM INFO
 def get_instagram_info(username):
-    """Get Instagram profile information"""
     try:
         if not instaloader:
             speak("Instaloader library not available")
@@ -1066,7 +953,6 @@ def get_instagram_info(username):
         return None
     
 def ask_wolframalpha(query):
-    """Ask Wolframalpha"""
     try:
         try:
             import wolframalpha
@@ -1097,7 +983,6 @@ def ask_wolframalpha(query):
         return None
     
 def send_email(to, subject, content):
-    """Send email via Gmail"""
     try:
         import smtplib
         from email.mime.text import MIMEText
@@ -1107,7 +992,6 @@ def send_email(to, subject, content):
             speak("Email credentials not configured in dot env file")
             return False
         
-        # Create message
         msg = MIMEMultipart()
         msg['From'] = EMAIL_ADDRESS
         msg['To'] = to
@@ -1115,7 +999,6 @@ def send_email(to, subject, content):
         
         msg.attach(MIMEText(content, 'plain'))
         
-        # Send email
         speak("Sending email...")
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()

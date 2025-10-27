@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 body {
   background-color: black;
   overflow-y: hidden;
@@ -279,3 +280,499 @@ svg {
     transform: rotate(360deg);
   }
 }
+=======
+/* body {
+  background-color: black;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+.square{
+    width :400px;
+    height :400px;
+    position:relative;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+}
+.square span:nth-child(1){
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(#6b72ff00 50%, #000dff3b 50%);
+    box-shadow: 0 0 50px rgb(25,25,255),inset 0 0 50px rgb(25,25,255);
+    border-radius:30% 60% 63% 37%/40% 45% 58% 60%;
+    transition:0.4s;
+    cursor: pointer;
+    animation: animate1 6s infinite linear;
+}
+.square span:nth-child(2){
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(#6b72ff00 50%, #000dff3b 50%);
+    box-shadow: 0 0 50px rgb(25,25,255),inset 0 0 50px rgb(25,25,255);
+    border-radius:30% 60% 63% 37%/40% 45% 58% 60%;
+    transition:0.4s;
+    cursor: pointer;
+    animation: animate2 4s infinite linear;
+}
+.square span:nth-child(3){
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(#6b72ff00 50%, #000dff3b 50%);
+    box-shadow: 0 0 50px rgb(25,25,255),inset 0 0 50px rgb(25,25,255);
+    border-radius:30% 60% 63% 37%/40% 45% 58% 60%;
+    transition:0.4s;
+    cursor: pointer;
+    animation: animate3 8s infinite linear;
+}
+
+
+@keyframes animate1 {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes animate2 {
+    0% {
+        transform: rotate(90deg);
+    }
+    100% {
+        transform: rotate(270deg);
+    }
+}
+
+@keyframes animate3 {
+    0% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(180deg);
+    }
+}
+
+
+
+
+#TextInput {
+    background-color: #181818a8;
+    border-color: blue;
+    box-shadow: 0 0 20px rgb(255, 0, 0),
+      inset 0 0 0px rgb(255, 140, 0);
+    border-radius: 8px;
+    color: white;
+    padding: 3px 0px 3px 20px;
+    margin: 0px 20%;
+  }
+  
+  .input-field {
+    background-color: transparent;
+    border: none;
+    width: 95%;
+    outline: none;
+    color: white;
+    font-family: cursive;
+  }
+  
+  
+  .glow-on-hover {
+    width: 35px;
+    height: 35px;
+    border: none;
+    outline: none;
+    color: #fff;
+    background: #111;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 10px;
+    padding: 0px;
+    margin-left: 10px;
+  }
+  
+  .glow-on-hover:before {
+    content: '';
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 10px;
+  }
+  
+  .glow-on-hover:active {
+    color: #181818a8
+  }
+  
+  .glow-on-hover:active:after {
+    background: transparent;
+  }
+  
+  .glow-on-hover:hover:before {
+    opacity: 1;
+  }
+  
+  .glow-on-hover:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+  }
+  
+  @keyframes glowing {
+    0% {
+      background-position: 0 0;
+    }
+  
+    50% {
+      background-position: 400% 0;
+    }
+  
+    100% {
+      background-position: 0 0;
+    }
+  }
+  
+
+  .chat-canvas{
+    background-color: #191919
+  }
+  
+  .receiver_message{
+    padding: 8px;
+    border: 2px solid cyan;
+    border-radius: 0px 15px 15px 20px;
+    width: auto;
+    color: white;
+    background-color: #0dcaf014;
+  }
+  
+  .sender_message{
+    padding: 8px;
+    border: 1px solid #0045ff;
+    border-radius: 15px 15px 0px 20px;
+    width: auto;
+    color: white;
+    background-color: #0045ff;
+  }
+  .width-size{
+    max-width: 80%;
+    width: auto;
+  }
+
+
+
+  
+.svg-frame {
+  position: relative;
+  width: 455px;
+  height: 455px;
+  transform-style: preserve-3d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: change-view 2s ease-in infinite;
+}
+
+@keyframes change-view {
+
+  0%,
+  50% {
+    transform: rotate(-0deg) skew(00deg) translateX(calc(0 * var(--i))) translateY(calc(-0px * var(--i)));
+  }
+
+  70%,
+  100% {
+    transform: rotate(-80deg) skew(30deg) translateX(calc(45px * var(--i))) translateY(calc(-35px * var(--i)));
+  }
+}
+
+svg {
+  position: absolute;
+  transition: 0.5s;
+  transform-origin: center;
+  width: 450px;
+  height: 450px;
+  fill: none;
+  animation: change-view 5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 12px #00aaff);
+}
+
+#big-centro,
+#outter1,
+#solo-lines,
+#center,
+#outter-center,
+#bottom-dots,
+#center-lines,
+#squares,
+#top-dots {
+  transform-origin: center;
+  animation: rotate 4s ease-in-out infinite alternate;
+}
+
+#big-centro {
+  animation-delay: -1.5s;
+}
+
+#outter1 {
+  animation-delay: -1.2s;
+}
+
+#center {
+  animation-delay: -2.2s;
+}
+
+#bottom-dots,
+#top-dots {
+  animation-duration: 7s;
+}
+
+#center-lines,
+#outter-center {
+  animation-duration: 6s;
+  animation-delay: -3s;
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+} */
+/* ✅ JARVIS/FRIDAY THEME */
+body {
+  background: #000000;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(0, 170, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 170, 255, 0.1) 0%, transparent 50%);
+  overflow: hidden;
+}
+
+/* Status Bar */
+.status-bar {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+#status-indicator {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #00aaff;
+  border-radius: 25px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 2px;
+  box-shadow: 0 0 20px rgba(0, 170, 255, 0.5);
+}
+
+.status-active {
+  border-color: #00ff00 !important;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.8) !important;
+}
+
+.status-active i {
+  color: #00ff00;
+  animation: pulse 2s infinite;
+}
+
+.status-processing {
+  border-color: #ffaa00 !important;
+  box-shadow: 0 0 20px rgba(255, 170, 0, 0.8) !important;
+}
+
+.status-processing i {
+  color: #ffaa00;
+  animation: pulse 1s infinite;
+}
+
+.status-inactive i {
+  color: #00aaff;
+}
+
+#status-text {
+  color: #fff;
+  font-size: 14px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* Continuous Mode Indicator */
+.listening-mode {
+  display: none;
+  background: linear-gradient(90deg, rgba(0, 170, 255, 0.2), rgba(0, 255, 0, 0.2));
+  border: 2px solid #00ff00;
+  border-radius: 30px;
+  padding: 15px 30px;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 3px;
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+  animation: glow-border 2s infinite;
+}
+
+.listening-mode i {
+  animation: pulse 1.5s infinite;
+  margin-right: 10px;
+}
+
+@keyframes glow-border {
+  0%, 100% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.6); }
+  50% { box-shadow: 0 0 50px rgba(0, 255, 0, 1); }
+}
+
+/* Friday Subtitle */
+.friday-subtitle {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #00aaff;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* Text Input */
+#TextInput {
+  background: rgba(0, 170, 255, 0.1);
+  border: 2px solid #00aaff;
+  box-shadow: 0 0 30px rgba(0, 170, 255, 0.5);
+  border-radius: 30px;
+  padding: 5px 20px;
+  margin: 0 10%;
+}
+
+.input-field {
+  background: transparent;
+  border: none;
+  width: 100%;
+  outline: none;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  padding: 10px;
+}
+
+.input-field::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Glow Button */
+.glow-on-hover {
+  width: 45px;
+  height: 45px;
+  border: 2px solid #00aaff;
+  outline: none;
+  color: #00aaff;
+  background: rgba(0, 170, 255, 0.1);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.glow-on-hover:hover {
+  background: rgba(0, 170, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 170, 255, 0.8);
+  transform: scale(1.1);
+}
+
+/* Square Animation */
+.square {
+  width: 400px;
+  height: 400px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.square span:nth-child(1),
+.square span:nth-child(2),
+.square span:nth-child(3) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(#00aaff00 50%, #00aaff3b 50%);
+  box-shadow: 0 0 50px rgba(0, 170, 255, 0.8), inset 0 0 50px rgba(0, 170, 255, 0.5);
+  border-radius: 30% 60% 63% 37%/40% 45% 58% 60%;
+  cursor: pointer;
+}
+
+.square span:nth-child(1) {
+  animation: animate1 6s infinite linear;
+}
+
+.square span:nth-child(2) {
+  animation: animate2 4s infinite linear;
+}
+
+.square span:nth-child(3) {
+  animation: animate3 8s infinite linear;
+}
+
+@keyframes animate1 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes animate2 {
+  0% { transform: rotate(90deg); }
+  100% { transform: rotate(270deg); }
+}
+
+@keyframes animate3 {
+  0% { transform: rotate(180deg); }
+  100% { transform: rotate(540deg); }
+}
+
+/* Messages */
+.receiver_message {
+  padding: 12px 20px;
+  border: 2px solid #00aaff;
+  border-radius: 0px 20px 20px 20px;
+  background: rgba(0, 170, 255, 0.1);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+.sender_message {
+  padding: 12px 20px;
+  border: 2px solid #00ff00;
+  border-radius: 20px 20px 0px 20px;
+  background: rgba(0, 255, 0, 0.1);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+>>>>>>> 7e918e6 (F.R.I.D.A.Y - I)

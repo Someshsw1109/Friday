@@ -27,7 +27,7 @@ def AuthenticateFace():
         faceCascade = cv2.CascadeClassifier(str(cascade_path))
         font = cv2.FONT_HERSHEY_SIMPLEX
         id = 2
-        names = ['', '', 'Somesh']
+        names = ['unknown', 'unknown', 'Somesh']
         
         try:
             cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
