@@ -106,7 +106,10 @@
 
 
 ### Screenshots
-*[Add your screenshots here]*
+*<img width="1289" height="1022" alt="Screenshot 2025-10-27 130621" src="https://github.com/user-attachments/assets/a1ff6dd8-ebe3-41d6-ac81-f8b2f43c09c2" />
+<img width="1229" height="1024" alt="Screenshot 2025-10-27 144305" src="https://github.com/user-attachments/assets/42fff123-6185-4dbd-a9d3-1eec45cfbbfc" />
+<img width="1127" height="1047" alt="Screenshot 2025-10-27 144322" src="https://github.com/user-attachments/assets/214fd3e9-938d-4d70-a85a-e292048ed665" />
+*
 
 ---
 
@@ -171,4 +174,5 @@ Friday/
 ├── jarvis.db                       # SQLite database
 ├── .env                            # Environment variables
 ├── requirements.txt                # Dependencies
+
 └── README.md                       # Documentation
