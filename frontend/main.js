@@ -1,3 +1,6 @@
+// ✅ GLOBAL STATE
+let isListening = false;
+
 $(document).ready(function () {
   setTimeout(function() {
     eel.init()();
@@ -49,12 +52,47 @@ $(document).ready(function () {
   });
 });
 
+// ✅ TOGGLE ASSISTANT (START/STOP)
+function toggleAssistant() {
+  if (isListening) {
+    // Stop listening
+    stopContinuousMode();
+  } else {
+    // Start listening
+    startContinuousMode();
+  }
+}
+
+// ✅ START CONTINUOUS MODE
+function startContinuousMode() {
+  try {
+    console.log("🚀 Starting continuous mode...");
+    eel.start_assistant()();
+    isListening = true;
+    
+    // Update button
+    $("#toggleBtn").removeClass("control-btn-start").addClass("control-btn-stop");
+    $("#toggleBtn i").removeClass("bi-play-circle").addClass("bi-stop-circle");
+    $("#toggleBtnText").text("Stop Listening");
+    
+  } catch (error) {
+    console.error("Error starting:", error);
+  }
+}
+
 // ✅ STOP CONTINUOUS MODE
 function stopContinuousMode() {
   try {
+    console.log("🛑 Stopping continuous mode...");
     eel.stop_assistant()();
-    console.log("🛑 Continuous mode stopped");
+    isListening = false;
+    
+    // Update button
+    $("#toggleBtn").removeClass("control-btn-stop").addClass("control-btn-start");
+    $("#toggleBtn i").removeClass("bi-stop-circle").addClass("bi-play-circle");
+    $("#toggleBtnText").text("Start Listening");
+    
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error stopping:", error);
   }
 }

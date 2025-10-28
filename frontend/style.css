@@ -212,8 +212,30 @@ body {
   font-family: 'Courier New', monospace;
 }
 
-/* ✅ CONTROL BUTTON */
-.control-btn {
+/* ✅ CONTROL BUTTON - START STATE */
+.control-btn-start {
+  background: rgba(0, 255, 0, 0.2);
+  border: 2px solid #00ff00;
+  color: #00ff00;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+  text-transform: uppercase;
+}
+
+.control-btn-start:hover {
+  background: rgba(0, 255, 0, 0.4);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+  transform: scale(1.05);
+}
+
+/* ✅ CONTROL BUTTON - STOP STATE */
+.control-btn-stop {
   background: rgba(255, 0, 0, 0.2);
   border: 2px solid #ff0000;
   color: #ff0000;
@@ -228,7 +250,7 @@ body {
   text-transform: uppercase;
 }
 
-.control-btn:hover {
+.control-btn-stop:hover {
   background: rgba(255, 0, 0, 0.4);
   box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
   transform: scale(1.05);
@@ -236,5 +258,175 @@ body {
 
 .control-btn i {
   margin-right: 8px;
-  animation: pulse 2s infinite;
+}
+
+/* ✅ INACTIVE MODE INDICATOR */
+.inactive-mode {
+  background: linear-gradient(90deg, rgba(255, 0, 0, 0.2), rgba(255, 100, 0, 0.2));
+  border: 2px solid #ff6600;
+  border-radius: 30px;
+  padding: 15px 30px;
+  color: #ff6600;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 3px;
+  box-shadow: 0 0 30px rgba(255, 100, 0, 0.6);
+  animation: glow-border-inactive 2s infinite;
+}
+
+.inactive-mode i {
+  margin-right: 10px;
+  opacity: 0.7;
+}
+
+@keyframes glow-border-inactive {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 100, 0, 0.4); }
+  50% { box-shadow: 0 0 40px rgba(255, 100, 0, 0.7); }
+}
+
+/* ✅ ACTIVE LISTENING JARVIS HOOD */
+#JarvisHood.active-listening .square span {
+  box-shadow: 0 0 70px rgba(0, 255, 0, 1), inset 0 0 70px rgba(0, 255, 0, 0.8);
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 50px rgba(0, 255, 0, 0.8), inset 0 0 50px rgba(0, 255, 0, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 100px rgba(0, 255, 0, 1), inset 0 0 100px rgba(0, 255, 0, 0.8);
+  }
+}
+
+/* ✅ HOVER EFFECT FOR JARVIS HOOD */
+#JarvisHood:hover .square span {
+  box-shadow: 0 0 80px rgba(0, 170, 255, 1), inset 0 0 80px rgba(0, 170, 255, 0.8);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-container {
+  background: linear-gradient(135deg, rgba(0, 20, 40, 0.95), rgba(0, 40, 80, 0.95));
+  border: 2px solid #00aaff;
+  border-radius: 20px;
+  padding: 30px;
+  min-width: 400px;
+  max-width: 500px;
+  box-shadow: 0 0 50px rgba(0, 170, 255, 0.5);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.modal-header h3 {
+  color: #00aaff;
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.modal-body {
+  margin-bottom: 0;
+}
+
+.text-input-field {
+  width: 100%;
+  padding: 15px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #00aaff;
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s;
+  margin-bottom: 20px;
+}
+
+.text-input-field:focus {
+  border-color: #00ff00;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+.text-input-field::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.btn-submit, .btn-cancel {
+  padding: 12px 30px;
+  border: 2px solid;
+  border-radius: 10px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-submit {
+  background: rgba(0, 255, 0, 0.2);
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.btn-submit:hover {
+  background: rgba(0, 255, 0, 0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+  transform: scale(1.05);
+}
+
+.btn-cancel {
+  background: rgba(255, 0, 0, 0.2);
+  border-color: #ff0000;
+  color: #ff0000;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 0, 0, 0.4);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+  transform: scale(1.05);
+}
+
+.btn-submit i, .btn-cancel i {
+  font-size: 18px;
 }

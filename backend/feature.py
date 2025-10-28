@@ -11,6 +11,7 @@ import eel
 from pathlib import Path
 import asyncio
 import socket
+from backend.automation import web_automation, youtube_automation, file_searcher, credential_manager, flight_booking
 
 try:
     from EdgeGPT.EdgeGPT import Chatbot, ConversationStyle
@@ -1013,4 +1014,183 @@ def send_email(to, subject, content):
     except Exception as e:
         print(f"Error in send_email: {e}")
         speak("Unable to send email. Please check your email configuration")
+        return False
+
+def save_login_credentials(website):
+    try:
+        from backend.text_input import get_text_input
+        
+        speak(f"Please enter your username or mobile number for {website}")
+        
+        username = get_text_input(f"Enter Username/Mobile for {website}", is_password=False)
+        
+        if not username:
+            speak("Username not received")
+            return False
+        
+        speak("Now enter your password")
+        
+        password = get_text_input(f"Enter Password for {website}", is_password=True)
+        
+        if not password:
+            speak("Password not received")
+            return False
+        
+        credential_manager.save_credential(website.lower(), username, password)
+        speak(f"Credentials saved securely for {website}")
+        return True
+        
+    except Exception as e:
+        print(f"Error saving credentials: {e}")
+        speak("Could not save credentials")
+        return False
+
+def login_to_website(website):
+    try:
+        speak(f"Logging into {website}")
+        success = web_automation.login_website(website)
+        return success
+    except Exception as e:
+        print(f"Error logging in: {e}")
+        speak("Login failed")
+        return False
+
+def play_youtube_video(video_name):
+    try:
+        youtube_automation.play_video(video_name)
+        return True
+    except Exception as e:
+        print(f"YouTube error: {e}")
+        speak("Could not play video")
+        return False
+
+def search_local_file(filename):
+    try:
+        file_searcher.search_file(filename)
+        return True
+    except Exception as e:
+        print(f"File search error: {e}")
+        speak("Could not search file")
+        return False
+
+def book_indigo_flight():
+    try:
+        from backend.command import takecommand
+        import re
+        
+        speak("Starting Indigo flight booking")
+        
+        if not web_automation._init_driver():
+            speak("Could not open browser")
+            return False
+        
+        flight_booking.automation = web_automation
+        
+        speak("Opening Indigo website")
+        web_automation.driver.get("https://www.goindigo.in/")
+        time.sleep(5)
+        
+        creds = credential_manager.get_credential('indigo')
+        if creds:
+            speak("Attempting to login")
+            flight_booking.login_indigo()
+        else:
+            speak("No saved credentials. Continuing without login.")
+        
+        speak("From which city are you traveling?")
+        from_city = takecommand()
+        
+        if not from_city:
+            speak("Starting city not received. Please try again.")
+            from_city = takecommand()
+            if not from_city:
+                speak("Cannot proceed without departure city")
+                web_automation.close_driver()
+                return False
+        
+        flight_booking.fill_from_city(from_city)
+        
+        speak("To which city are you going?")
+        to_city = takecommand()
+        
+        if not to_city:
+            speak("Destination not received. Please try again.")
+            to_city = takecommand()
+            if not to_city:
+                speak("Cannot proceed without destination")
+                web_automation.close_driver()
+                return False
+        
+        flight_booking.fill_to_city(to_city)
+        
+        speak("When do you want to travel? Say the date like 15 December or just say tomorrow")
+        date_input = takecommand()
+        
+        travel_date = None
+        if date_input:
+            if "tomorrow" in date_input:
+                tomorrow = datetime.datetime.now() + datetime.timedelta(days=1)
+                travel_date = tomorrow.strftime("%d")
+            else:
+                try:
+                    numbers = re.findall(r'\d+', date_input)
+                    if numbers:
+                        travel_date = numbers[0]
+                except:
+                    pass
+        
+        flight_booking.select_date(travel_date)
+        
+        speak("How many passengers? Say the number")
+        passenger_input = takecommand()
+        
+        passengers = 1
+        if passenger_input:
+            try:
+                numbers = re.findall(r'\d+', passenger_input)
+                if numbers:
+                    passengers = int(numbers[0])
+            except:
+                passengers = 1
+        
+        if passengers > 1:
+            flight_booking.set_passengers(passengers)
+        
+        if not flight_booking.search_flights():
+            speak("Could not search flights. Please try manually.")
+            return False
+        
+        flights = flight_booking.get_available_flights()
+        
+        if flights:
+            speak("Which flight would you like to book? Say flight number 1, 2, 3, etc.")
+            flight_choice = takecommand()
+            
+            flight_num = 1
+            if flight_choice:
+                try:
+                    numbers = re.findall(r'\d+', flight_choice)
+                    if numbers:
+                        flight_num = int(numbers[0])
+                        if flight_num < 1 or flight_num > len(flights):
+                            flight_num = 1
+                except:
+                    flight_num = 1
+            
+            flight_booking.select_flight_by_number(flight_num)
+        
+        flight_booking.proceed_to_payment()
+        
+        speak("Booking process complete. Please complete payment manually for security.")
+        return True
+        
+    except Exception as e:
+        print(f"Booking error: {e}")
+        import traceback
+        traceback.print_exc()
+        speak("Booking failed. Please try manually.")
+        try:
+            web_automation.close_driver()
+        except:
+            pass
         return False

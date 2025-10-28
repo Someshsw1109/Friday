@@ -34,15 +34,41 @@ $(document).ready(function () {
   // ✅ ENABLE CONTINUOUS MODE UI
   eel.expose(enableContinuousMode);
   function enableContinuousMode() {
+    console.log("✅ UI: Enabling continuous mode");
+    
+    isListening = true;
+    
+    // Show active indicator
     $("#listening-mode").fadeIn();
-    $("#stopBtn").fadeIn();
+    $("#inactive-mode").fadeOut();
+    
+    // Update button to STOP state
+    $("#toggleBtn").removeClass("control-btn-start").addClass("control-btn-stop");
+    $("#toggleBtn i").removeClass("bi-play-circle").addClass("bi-stop-circle");
+    $("#toggleBtnText").text("Stop Listening");
+    
+    // Add active glow to JarvisHood
+    $("#JarvisHood").addClass("active-listening");
   }
 
   // ✅ DISABLE CONTINUOUS MODE UI
   eel.expose(disableContinuousMode);
   function disableContinuousMode() {
+    console.log("🛑 UI: Disabling continuous mode");
+    
+    isListening = false;
+    
+    // Show inactive indicator
     $("#listening-mode").fadeOut();
-    $("#stopBtn").fadeOut();
+    $("#inactive-mode").fadeIn();
+    
+    // Update button to START state
+    $("#toggleBtn").removeClass("control-btn-stop").addClass("control-btn-start");
+    $("#toggleBtn i").removeClass("bi-stop-circle").addClass("bi-play-circle");
+    $("#toggleBtnText").text("Start Listening");
+    
+    // Remove active glow from JarvisHood
+    $("#JarvisHood").removeClass("active-listening");
   }
 
   // ✅ SENDER TEXT
