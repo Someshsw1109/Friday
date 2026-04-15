@@ -14,6 +14,8 @@ try:
         cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS contacts(id integer primary key, name VARCHAR(100), phone VARCHAR(20))"
         cursor.execute(query)
+        query = "CREATE TABLE IF NOT EXISTS reminders(id integer primary key, task VARCHAR(255), reminder_time DATETIME, status VARCHAR(20) DEFAULT 'pending')"
+        cursor.execute(query)
         conn.commit()
         print("Database initialized successfully")
     except Exception as e:

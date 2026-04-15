@@ -1194,3 +1194,68 @@ def book_indigo_flight():
         except:
             pass
         return False
+def add_reminder(task, time_str):
+    try:
+        # Simple parser for "in X minutes" or "at HH:MM"
+        now = datetime.datetime.now()
+        reminder_time = None
+
+        if "in" in time_str:
+            try:
+                minutes = int(re.findall(r'\d+', time_str)[0])
+                reminder_time = now + datetime.timedelta(minutes=minutes)
+            except:
+                pass
+        elif "at" in time_str:
+            try:
+                time_val = re.findall(r'\d+:\d+', time_str)[0]
+                hour, minute = map(int, time_val.split(':'))
+                reminder_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                if reminder_time < now:
+                    reminder_time += datetime.timedelta(days=1)
+            except:
+                pass
+
+        if reminder_time:
+            cursor.execute("INSERT INTO reminders (task, reminder_time) VALUES (?, ?)", (task, reminder_time.strftime('%Y-%m-%d %H:%M:%S')))
+            conn.commit()
+            speak(f"Reminder set for {task} at {reminder_time.strftime('%I:%M %p')}")
+            return True
+        else:
+            speak("I couldn't understand the time for the reminder.")
+            return False
+    except Exception as e:
+        print(f"Error adding reminder: {e}")
+        speak("Failed to add reminder")
+        return False
+
+def check_reminders():
+    try:
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # Create a new local cursor for thread safety if needed
+        local_cursor = conn.cursor()
+        local_cursor.execute("SELECT id, task FROM reminders WHERE reminder_time <= ? AND status = 'pending'", (now,))
+        pending = local_cursor.fetchall()
+
+        for r_id, task in pending:
+            speak(f"Reminder: {task}")
+            local_cursor.execute("UPDATE reminders SET status = 'completed' WHERE id = ?", (r_id,))
+
+        if pending:
+            conn.commit()
+
+        local_cursor.close()
+    except Exception as e:
+        print(f"Error checking reminders: {e}")
+
+def add_contact(name, phone):
+    try:
+        cursor.execute("INSERT INTO contacts (name, phone) VALUES (?, ?)", (name, phone))
+        conn.commit()
+        speak(f"Added {name} to contacts with phone number {phone}")
+        return True
+    except Exception as e:
+        print(f"Error adding contact: {e}")
+        speak("Failed to add contact")
+        return False

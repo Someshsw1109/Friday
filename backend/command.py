@@ -96,6 +96,26 @@ def takeAllCommands(message=None):
                 
                 if "hello" in query or "hi friday" in query or "hey friday" in query or "hello friday" in query:
                     greet_user()
+
+                elif "set reminder" in query or "remind me" in query:
+                    speak("What should I remind you about?")
+                    task = takecommand()
+                    if task:
+                        speak("When should I remind you? For example, in 5 minutes or at 15:30")
+                        time_str = takecommand()
+                        if time_str:
+                            from backend.feature import add_reminder
+                            add_reminder(task, time_str)
+
+                elif "add contact" in query or "new contact" in query:
+                    speak("What is the name of the contact?")
+                    name = takecommand()
+                    if name:
+                        speak(f"What is the phone number for {name}?")
+                        phone = takecommand()
+                        if phone:
+                            from backend.feature import add_contact
+                            add_contact(name, phone)
                     
                 elif "save credentials" in query or "save login" in query or "remember password" in query:
                     speak("Which website should I save credentials for?")
@@ -332,6 +352,17 @@ def takeAllCommands(message=None):
         else:
             safe_eel_call('updateStatus', 'inactive')
 
+def reminder_scheduler():
+    """Background thread to check reminders every 30 seconds"""
+    print("⏰ Reminder scheduler started!")
+    while True:
+        try:
+            from backend.feature import check_reminders
+            check_reminders()
+        except Exception as e:
+            print(f"❌ Error in reminder_scheduler: {e}")
+        time.sleep(30)
+
 def assistant_loop():
     global CONTINUOUS_MODE, LISTENING, PROCESSING
     
@@ -357,10 +388,16 @@ def start_assistant():
     LISTENING = True
     CONTINUOUS_MODE = True
     
-    thread = threading.Thread(target=assistant_loop, daemon=True)
-    thread.start()
+    # Start the listening thread
+    listen_thread = threading.Thread(target=assistant_loop, daemon=True)
+    listen_thread.start()
     print("✅ Listening thread started!")
     
+    # Start the reminder scheduler thread
+    reminder_thread = threading.Thread(target=reminder_scheduler, daemon=True)
+    reminder_thread.start()
+    print("✅ Reminder thread started!")
+
     speak("Continuous mode activated. I'm listening.")
     safe_eel_call('enableContinuousMode')
     safe_eel_call('updateStatus', 'listening')
