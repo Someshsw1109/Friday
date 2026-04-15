@@ -172,3 +172,117 @@ Friday/
 ├── .env                            # Environment variables
 ├── requirements.txt                # Dependencies
 └── README.md                       # Documentation
+```
+
+---
+
+## 🚀 Installation
+
+Follow these steps to set up FRIDAY on your local machine:
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Someshsw1109/Friday.git
+cd Friday
+```
+
+### 2. Set Up Virtual Environment (Recommended)
+```bash
+python -m venv venv
+# On Windows
+venv\Scripts\activate
+# On macOS/Linux
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+> **Note:** For `pyaudio` on Windows, you might need to install it via a wheel file if `pip install` fails. For `face_recognition`, ensure you have `cmake` and `dlib` installed.
+
+---
+
+## ⚙️ Configuration
+
+### 1. Environment Variables
+Create a `.env` file in the root directory by copying the example:
+```bash
+cp .env.example .env
+```
+Open `.env` and fill in your API keys:
+- `PORCUPINE_ACCESS_KEY`: Get from [Picovoice Console](https://console.picovoice.ai/)
+- `OPENWEATHER_API_KEY`: Get from [OpenWeatherMap](https://openweathermap.org/api)
+- `NEWS_API_KEY`: Get from [NewsAPI](https://newsapi.org/)
+- `WOLFRAMALPHA_APP_ID`: Get from [WolframAlpha Developer Portal](https://developer.wolframalpha.com/)
+- `EMAIL_ADDRESS` & `EMAIL_PASSWORD`: Your Gmail address and an [App Password](https://myaccount.google.com/apppasswords)
+
+### 2. Bing Chat Cookies
+To use the AI Chatbot feature, you need to provide Bing cookies:
+1. Install the "Cookie-Editor" extension in your browser.
+2. Go to [bing.com](https://www.bing.com) and log in.
+3. Open the extension and click "Export" -> "JSON".
+4. Paste the content into `backend/cookie.json`.
+
+---
+
+## ▶️ Usage
+
+To start FRIDAY, run the following command:
+
+```bash
+python run.py
+```
+
+- The application will launch a GUI.
+- To activate FRIDAY, say the hotword **"Alexa"** (configurable in `backend/config.py`).
+- Use the voice commands listed below.
+
+---
+
+## 🗣️ Voice Commands
+
+| Category | Command Examples |
+|----------|------------------|
+| **System** | "Open Notepad", "Take a screenshot", "Shutdown system" |
+| **Web** | "Open YouTube", "Search on Google for Python", "Play Believer on YouTube" |
+| **Social** | "Send a WhatsApp message", "Make a WhatsApp call" |
+| **AI Chat** | "Who is Elon Musk?", "Tell me a joke", "What is the weather in Mumbai?" |
+| **Files** | "Open folder", "Create a new folder", "Delete this file" |
+
+---
+
+## 🛠️ Troubleshooting
+
+- **Microphone not detected**: Ensure your microphone is set as the default recording device in system settings.
+- **Hotword detection fails**: Check your `PORCUPINE_ACCESS_KEY` in the `.env` file.
+- **Bing Chat errors**: Update the `backend/cookie.json` with fresh cookies from Bing.
+- **GUI not loading**: Ensure `eel` is properly installed and you have a web browser (Chrome recommended).
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Picovoice](https://picovoice.ai/) for Porcupine Hotword Detection
+- [Microsoft](https://www.microsoft.com/) for Bing Chat
+- [Eel Framework](https://github.com/python-eel/Eel) for the GUI
+- Inspired by the Marvel Cinematic Universe's F.R.I.D.A.Y.

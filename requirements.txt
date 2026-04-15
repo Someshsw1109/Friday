@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 eel
 pyttsx3
 SpeechRecognition
@@ -30,37 +29,4 @@ google-auth-oauthlib
 PyPDF2
 instaloader
 pyperclip
-=======
-eel
-pyttsx3
-SpeechRecognition
-pvporcupine
-pyaudio
-pyautogui
-pywhatkit
-pygame
-opencv-python
-face_recognition
-pycaw
-comtypes
-psutil
-winshell
-EdgeGPT
-python-dotenv
-wolframalpha
-wikipedia
-requests
-beautifulsoup4
-geocoder
-geopy
-pyjokes
-pygetwindow
-pillow
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-PyPDF2
-instaloader
-pyperclip
->>>>>>> aee3ec9 (New Features Added)
 keyboard
