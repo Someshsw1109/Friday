@@ -207,11 +207,7 @@ pip install -r requirements.txt
 ## ⚙️ Configuration
 
 ### 1. Environment Variables
-Create a `.env` file in the root directory by copying the example:
-```bash
-cp .env.example .env
-```
-Open `.env` and fill in your API keys:
+Open your `.env` file in the root directory and fill in your API keys:
 - `PORCUPINE_ACCESS_KEY`: Get from [Picovoice Console](https://console.picovoice.ai/)
 - `OPENWEATHER_API_KEY`: Get from [OpenWeatherMap](https://openweathermap.org/api)
 - `NEWS_API_KEY`: Get from [NewsAPI](https://newsapi.org/)
